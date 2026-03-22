@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Solome – Plan.Pay.Travel</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue:#1a3fd4; --blue-dark:#0f2499; --blue-light:#e8eeff;
+  --teal:#00c4a7; --teal-light:#e0faf6;
+  --amber:#f59e0b; --red:#ef4444;
+  --bg:#f4f6ff; --card:#fff; --sidebar-bg:#fff;
+  --text:#0d1240; --muted:#6b7280; --border:#e5e7eb;
+  --input-bg:#fff; --modal-bg:#fff; --notif-bg:#fff;
+  --progress-track:#e5e7eb; --r:16px; --rs:10px;
+}
+[data-theme="dark"] {
+  --blue:#4d7fff; --blue-dark:#6b93ff; --blue-light:#1a2a5e;
+  --teal:#00e5c4; --teal-light:#0a3330;
+  --amber:#fbbf24; --red:#f87171;
+  --bg:#0e1117; --card:#161b27; --sidebar-bg:#111520;
+  --text:#e8eeff; --muted:#8b95b0; --border:#2a3150;
+  --input-bg:#1e2540; --modal-bg:#161b27; --notif-bg:#1e2540;
+  --progress-track:#2a3150;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s}
+
+/* ===== SPLASH ===== */
+#splash{position:fixed;inset:0;background:linear-gradient(135deg,#0d1f8c,#1a3fd4,#0099ff);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:12px;transition:opacity .6s}
+#splash.fade{opacity:0;pointer-events:none}
+.splash-logo{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;color:#fff;letter-spacing:-2px}
+.splash-tag{color:rgba(255,255,255,.7);letter-spacing:4px;font-size:12px;text-transform:uppercase}
+
+/* ===== LOGIN ===== */
+#login-screen{position:fixed;inset:0;z-index:99999;display:flex;transition:opacity .6s,transform .6s;background:var(--bg)}
+#login-screen.hide{opacity:0;transform:scale(1.04);pointer-events:none}
+.ll{width:48%;background:linear-gradient(145deg,#0a1563,#1a3fd4,#0099e6);display:flex;flex-direction:column;justify-content:space-between;padding:48px;position:relative;overflow:hidden}
+.ll::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;border:80px solid rgba(255,255,255,.05);bottom:-160px;right:-160px}
+.ll::after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;border:50px solid rgba(255,255,255,.06);top:-80px;left:-80px}
+.ll-logo{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:#fff;position:relative;z-index:1}
+.ll-logo span{color:#00e5c4}
+.ll-tag{color:rgba(255,255,255,.6);font-size:12px;letter-spacing:4px;text-transform:uppercase;margin-top:6px;position:relative;z-index:1}
+.ll-hero{position:relative;z-index:1}
+.ll-title{font-family:'Syne',sans-serif;font-size:32px;font-weight:700;color:#fff;line-height:1.25;margin-bottom:14px}
+.ll-title span{color:#00e5c4}
+.ll-sub{color:rgba(255,255,255,.65);font-size:14px;line-height:1.7}
+.ll-feats{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px}
+.ll-feat{display:flex;align-items:center;gap:12px}
+.ll-feat-icon{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.ll-feat-text{color:rgba(255,255,255,.8);font-size:13px;font-weight:500}
+.lr{flex:1;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:48px 40px;transition:background .3s;overflow-y:auto}
+.lf{width:100%;max-width:380px}
+.lf-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--text);margin-bottom:6px}
+.lf-sub{color:var(--muted);font-size:14px;margin-bottom:28px}
+.lf-group{margin-bottom:16px}
+.lf-group label{font-size:13px;font-weight:600;color:var(--muted);display:block;margin-bottom:7px}
+.lf-wrap{position:relative}
+.lf-wrap input{width:100%;padding:12px 16px 12px 44px;border-radius:12px;border:1.5px solid var(--border);font-family:'Space Grotesk',sans-serif;font-size:14px;background:var(--card);color:var(--text);outline:none;transition:border .2s}
+.lf-wrap input:focus{border-color:var(--blue)}
+.lf-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:17px;pointer-events:none}
+.lf-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted)}
+.lf-err{background:#fee2e2;color:#b91c1c;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+[data-theme="dark"] .lf-err{background:#3a1010;color:#f87171}
+.lf-btn{width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--blue),#0099e6);color:#fff;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s,opacity .2s}
+.lf-btn:hover{transform:translateY(-2px);opacity:.92}
+
+/* ===== SIDEBAR (desktop) ===== */
+.sidebar{width:220px;background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:100;transition:background .3s}
+.sb-logo{padding:22px 20px;font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--blue);border-bottom:1px solid var(--border)}
+.sb-logo span{color:var(--teal)}
+.sb-nav{flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:3px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--rs);cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);transition:all .2s;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--blue-light);color:var(--blue)}
+.nav-item.active{background:var(--blue);color:#fff}
+.nav-icon{font-size:18px;width:20px;text-align:center}
+.sb-bottom{padding:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.sb-user{display:flex;align-items:center;gap:10px;padding:6px 0}
+.sb-avatar{width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.sb-name{font-size:13px;font-weight:600;color:var(--text)}
+.sb-role{font-size:11px;color:var(--muted)}
+.key-badge{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;border:none;width:100%;transition:all .2s}
+.key-badge-ok{background:var(--teal-light);color:var(--teal)}
+.key-badge-miss{background:#fee2e2;color:var(--red)}
+[data-theme="dark"] .key-badge-miss{background:#3a1010}
+.key-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.key-dot-ok{background:var(--teal)}
+.key-dot-miss{background:var(--red)}
+.theme-toggle{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--rs);cursor:pointer;border:none;background:var(--blue-light);width:100%;transition:all .2s}
+.tt-track{width:38px;height:20px;border-radius:99px;background:var(--border);position:relative;transition:background .3s;flex-shrink:0}
+[data-theme="dark"] .tt-track{background:var(--blue)}
+.tt-thumb{width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left .3s}
+[data-theme="dark"] .tt-thumb{left:21px}
+.tt-label{font-size:12px;font-weight:600;color:var(--text)}
+
+/* ===== MOBILE TOP BAR — hidden on desktop ===== */
+.mob-top{display:none;position:fixed;top:0;left:0;right:0;z-index:200;height:56px;background:var(--sidebar-bg);border-bottom:1px solid var(--border);align-items:center;justify-content:space-between;padding:0 16px;transition:background .3s}
+.mob-logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--blue)}
+.mob-logo span{color:var(--teal)}
+.mob-right{display:flex;align-items:center;gap:9px}
+.mob-btn{background:var(--blue-light);border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text)}
+.mob-avatar{width:34px;height:34px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+
+/* ===== MOBILE BOTTOM NAV — hidden on desktop ===== */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--sidebar-bg);border-top:1px solid var(--border);padding:5px 0 env(safe-area-inset-bottom,5px);justify-content:space-around;align-items:center;transition:background .3s}
+.mbn-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 4px;border:none;background:none;cursor:pointer;color:var(--muted);font-family:'Space Grotesk',sans-serif;flex:1;transition:color .2s}
+.mbn-item.active{color:var(--blue)}
+.mbn-icon{font-size:22px;line-height:1}
+.mbn-label{font-size:10px;font-weight:600}
+
+/* ===== MAIN ===== */
+.app-shell{display:flex;min-height:100vh}
+.main{margin-left:220px;flex:1;padding:28px 32px;min-height:100vh}
+.page{display:none}
+.page.active{display:block}
+.page-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--text);margin-bottom:6px}
+.page-sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+.card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:22px;transition:background .3s}
+.card-sm{background:var(--card);border-radius:var(--rs);border:1px solid var(--border);padding:14px;transition:background .3s}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.stat-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:700}
+.tag{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.tag-blue{background:var(--blue-light);color:var(--blue)}
+.tag-teal{background:var(--teal-light);color:var(--teal)}
+.tag-amber{background:#fff8e1;color:#b45309}
+[data-theme="dark"] .tag-amber{background:#3a2a00;color:var(--amber)}
+.tag-red{background:#fee2e2;color:var(--red)}
+[data-theme="dark"] .tag-red{background:#3a1010;color:var(--red)}
+.btn{padding:10px 18px;border-radius:var(--rs);border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;transition:all .2s}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dark);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--blue);border:1.5px solid var(--blue)}
+.btn-teal{background:var(--teal);color:#fff}
+input,select,textarea{width:100%;padding:10px 14px;border-radius:var(--rs);border:1.5px solid var(--border);font-family:'Space Grotesk',sans-serif;font-size:14px;background:var(--input-bg);color:var(--text);outline:none;transition:border .2s,background .3s}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+label{font-size:13px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px}
+.form-group{margin-bottom:15px}
+.section-head{font-weight:700;font-size:15px;margin-bottom:13px;display:flex;align-items:center;gap:8px;color:var(--text)}
+.divider{border:none;border-top:1px solid var(--border);margin:18px 0}
+.progress-wrap{background:var(--progress-track);border-radius:99px;height:9px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;transition:width .5s}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+.spinner-blue{border-color:var(--blue-light);border-top-color:var(--blue)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.wallet-hero{background:linear-gradient(135deg,#0d1f8c,#1a3fd4);color:#fff;border-radius:var(--r);padding:28px;margin-bottom:18px;position:relative;overflow:hidden}
+.wallet-hero::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;background:rgba(255,255,255,.06);border-radius:50%}
+.wallet-balance{font-family:'Syne',sans-serif;font-size:40px;font-weight:800;margin-bottom:3px}
+.txn-item{display:flex;align-items:center;gap:13px;padding:11px 0;border-bottom:1px solid var(--border)}
+.txn-item:last-child{border-bottom:none}
+.txn-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.txn-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.txn-date{font-size:12px;color:var(--muted)}
+.txn-amount{font-weight:700;font-size:14px;flex-shrink:0}
+.txn-debit{color:var(--red)}
+.txn-credit{color:var(--teal)}
+.budget-cat{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.budget-cat-icon{font-size:22px;width:32px;text-align:center}
+.budget-cat-info{flex:1;min-width:0}
+.budget-cat-row{display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;font-weight:600}
+.budget-alert{margin-top:12px;padding:10px;border-radius:var(--rs);font-size:13px;background:#fff8e1;color:#b45309}
+[data-theme="dark"] .budget-alert{background:#3a2a00;color:var(--amber)}
+.planner-step{display:flex;gap:14px;margin-bottom:11px}
+.step-day{background:var(--blue);color:#fff;border-radius:var(--rs);padding:7px 10px;font-weight:700;font-size:12px;min-width:56px;text-align:center;align-self:flex-start;flex-shrink:0}
+.step-activity{font-weight:600;font-size:14px}
+.step-detail{font-size:12px;color:var(--muted);margin-top:2px}
+.step-cost{font-size:12px;font-weight:700;color:var(--teal);margin-top:2px}
+.rec-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:transform .2s,background .3s}
+.rec-card:hover{transform:translateY(-3px)}
+.rec-img{height:130px;background:linear-gradient(135deg,var(--blue-light),var(--teal-light));display:flex;align-items:center;justify-content:center;font-size:50px}
+.rec-body{padding:14px}
+.rec-name{font-weight:700;font-size:14px;margin-bottom:3px}
+.rec-meta{font-size:12px;color:var(--muted);margin-bottom:8px}
+.rec-price{font-weight:700;color:var(--blue);font-size:15px}
+.stars{color:var(--amber);font-size:12px;margin-bottom:4px}
+.rewards-hero{background:linear-gradient(135deg,#00796b,#00c4a7);color:#fff;border-radius:var(--r);padding:24px;margin-bottom:18px}
+.points-big{font-family:'Syne',sans-serif;font-size:48px;font-weight:800}
+.reward-item{display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid var(--border)}
+.reward-item:last-child{border-bottom:none}
+.reward-badge{width:42px;height:42px;border-radius:12px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.lang-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.swap-btn{background:var(--blue-light);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--text);flex-shrink:0}
+.translate-box{min-height:110px;padding:14px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:15px;line-height:1.6;background:var(--bg);color:var(--text);transition:background .3s}
+.notif{display:flex;align-items:flex-start;gap:11px;padding:12px;background:var(--notif-bg);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:9px;transition:background .3s}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);margin-top:4px;flex-shrink:0}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--modal-bg);border-radius:20px 20px 0 0;padding:24px 22px 36px;width:100%;max-width:500px;border:1px solid var(--border);transition:background .3s}
+.modal-title{font-family:'Syne',sans-serif;font-size:21px;font-weight:700;margin-bottom:5px;color:var(--text)}
+.modal-sub{color:var(--muted);font-size:13px;margin-bottom:22px}
+.pay-methods{display:flex;gap:9px;margin-bottom:18px}
+.pay-method{flex:1;padding:11px 6px;border:2px solid var(--border);border-radius:var(--rs);cursor:pointer;text-align:center;font-size:12px;font-weight:600;transition:all .2s;color:var(--text);background:var(--input-bg)}
+.pay-method.sel{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.pay-method-icon{font-size:21px;margin-bottom:3px}
+.apikey-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:10000;display:flex;align-items:flex-end;justify-content:center}
+.apikey-modal{background:var(--modal-bg);border-radius:20px 20px 0 0;padding:28px 22px 40px;width:100%;max-width:500px;border:1px solid var(--border)}
+.apikey-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--blue);margin-bottom:4px}
+.apikey-logo span{color:var(--teal)}
+.akey-wrap{position:relative}
+.akey-wrap input{padding-right:40px;font-family:monospace;font-size:13px}
+.apikey-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted)}
+
+/* =============================================
+   MOBILE RESPONSIVE
+   The key: mob-top and mob-nav are display:none
+   by default, and display:flex inside media query.
+   NO inline styles override this.
+============================================= */
+@media (max-width: 768px) {
+  /* Show mobile chrome */
+  .mob-top { display: flex; }
+  .mob-nav { display: flex; }
+  /* Hide desktop sidebar */
+  .sidebar { display: none; }
+  /* Content area */
+  .main { margin-left: 0; padding: 70px 14px 82px; }
+  /* Single column layouts */
+  .grid2, .grid3 { grid-template-columns: 1fr; gap: 12px; }
+  /* Typography */
+  .page-title { font-size: 21px; }
+  .page-sub { font-size: 13px; margin-bottom: 16px; }
+  .stat-val { font-size: 22px; }
+  /* Cards */
+  .card { padding: 16px; border-radius: 14px; }
+  .card-sm { padding: 12px; }
+  /* Wallet */
+  .wallet-hero { padding: 20px; border-radius: 14px; }
+  .wallet-balance { font-size: 30px; }
+  /* Rewards */
+  .rewards-hero { padding: 20px; }
+  .points-big { font-size: 36px; }
+  /* Translate */
+  .translate-card { max-width: 100% !important; }
+  .lang-row { flex-wrap: wrap; }
+  .lang-row select { flex: 1; min-width: 100px; }
+  /* Discover filters */
+  .rec-filter-row input { flex: 1 1 100%; width: 100% !important; }
+  /* Planner stacks */
+  .planner-grid { grid-template-columns: 1fr !important; }
+  /* Smart travel loop */
+  .travel-loop { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .travel-loop-inner { min-width: 560px; }
+  /* Buttons */
+  .btn { font-size: 13px; }
+  /* Login */
+  .ll { display: none; }
+  .lr { padding: 32px 22px 48px; }
+  .lf-title { font-size: 24px; }
+}
+@media (max-width: 400px) {
+  .main { padding: 66px 12px 78px; }
+  .wallet-balance { font-size: 26px; }
+  .points-big { font-size: 30px; }
+  .page-title { font-size: 19px; }
+  .mbn-label { font-size: 9px; }
+  .mbn-icon { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash" style="display:none">
+  <div class="splash-logo">SOLOM<span style="color:var(--teal)">E</span></div>
+  <div class="splash-tag">Plan · Pay · Travel</div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="ll">
+    <div><div class="ll-logo">SOLOM<span>E</span></div><div class="ll-tag">Plan · Pay · Travel</div></div>
+    <div class="ll-hero">
+      <div class="ll-title">Your smartest travel companion <span>starts here.</span></div>
+      <div class="ll-sub">AI-powered budgeting, payments, recommendations and real-time translation — built for solo travellers.</div>
+    </div>
+    <div class="ll-feats">
+      <div class="ll-feat"><div class="ll-feat-icon">💳</div><div class="ll-feat-text">Smart Wallet with auto expense tracking</div></div>
+      <div class="ll-feat"><div class="ll-feat-icon">🧠</div><div class="ll-feat-text">AI Trip Planner tailored to your budget</div></div>
+      <div class="ll-feat"><div class="ll-feat-icon">🌍</div><div class="ll-feat-text">Real-time language translation</div></div>
+      <div class="ll-feat"><div class="ll-feat-icon">🎁</div><div class="ll-feat-text">Cashback rewards on every payment</div></div>
+    </div>
+  </div>
+  <div class="lr">
+    <div class="lf">
+      <div class="lf-title">Welcome back 👋</div>
+      <div class="lf-sub">Enter any username and password to get started</div>
+      <div class="lf-err" id="login-err"></div>
+      <div class="lf-group">
+        <label>Username</label>
+        <div class="lf-wrap"><span class="lf-icon">👤</span><input type="text" id="login-user" placeholder="Enter your username" autocomplete="username"></div>
+      </div>
+      <div class="lf-group">
+        <label>Password</label>
+        <div class="lf-wrap"><span class="lf-icon">🔒</span><input type="password" id="login-pw" placeholder="Enter your password" autocomplete="current-password"><button class="lf-eye" id="login-eye" onclick="toggleLoginPw()">👁</button></div>
+      </div>
+      <button class="lf-btn" id="login-btn" onclick="doLogin()">Sign In →</button>
+    </div>
+  </div>
+</div>
+
+<!-- API KEY MODAL -->
+<div class="apikey-overlay" id="apikeyModal" style="display:none">
+  <div class="apikey-modal">
+    <div class="apikey-logo">SOLOM<span>E</span></div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Plan · Pay · Travel</div>
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">🔑 Anthropic API Key</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">Required for AI features (Planner, Discover, Translate). Stored only in your browser.<br><a href="https://console.anthropic.com/keys" target="_blank" style="color:var(--blue)">→ Get free key at console.anthropic.com</a></div>
+    <div class="form-group"><label>API Key</label><div class="akey-wrap"><input type="password" id="apikey-input" placeholder="sk-ant-api03-..."><button class="apikey-eye" id="eye-btn" onclick="toggleKeyVis()">👁</button></div></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveApiKey()">Save & Continue →</button>
+      <button class="btn btn-outline" onclick="skipApiKey()">Skip</button>
+    </div>
+    <div style="margin-top:12px;padding:10px;background:var(--blue-light);border-radius:var(--rs);font-size:12px;color:var(--muted)">🔒 Key stored in localStorage on your device only.</div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="overlay" id="payModal">
+  <div class="modal">
+    <div class="modal-title">💳 Quick Pay</div>
+    <div class="modal-sub">Pay through Solome Wallet — auto-tracked</div>
+    <div class="form-group"><label>Merchant / Service</label><input id="pay-merchant" type="text" placeholder="e.g. Grand Hyatt Tokyo"></div>
+    <div class="form-group"><label>Amount (₹)</label><input id="pay-amount" type="number" placeholder="0.00"></div>
+    <div class="form-group"><label>Category</label>
+      <select id="pay-cat">
+        <option value="accommodation">🏨 Accommodation</option>
+        <option value="food">🍜 Food & Dining</option>
+        <option value="transport">✈️ Transport</option>
+        <option value="activities">🎭 Activities</option>
+        <option value="shopping">🛍️ Shopping</option>
+      </select>
+    </div>
+    <div class="pay-methods">
+      <div class="pay-method sel" onclick="selMethod(this,'wallet')"><div class="pay-method-icon">👜</div>Wallet</div>
+      <div class="pay-method" onclick="selMethod(this,'upi')"><div class="pay-method-icon">📱</div>UPI</div>
+      <div class="pay-method" onclick="selMethod(this,'card')"><div class="pay-method-icon">💳</div>Card</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-outline" style="flex:1" onclick="closePayModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" id="pay-btn" onclick="processPayment()">Pay Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE TOP BAR -->
+<div class="mob-top" id="mob-top">
+  <div class="mob-logo">SOLOM<span>E</span></div>
+  <div class="mob-right">
+    <button class="mob-btn" id="mob-theme-btn" onclick="toggleTheme()">🌙</button>
+    <button class="mob-btn" onclick="openApiKeyModal()">🔑</button>
+    <div class="mob-avatar" id="mob-avatar">?</div>
+  </div>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mob-nav">
+  <button class="mbn-item active" onclick="showPage('dashboard',this)"><span class="mbn-icon">🏠</span><span class="mbn-label">Home</span></button>
+  <button class="mbn-item" onclick="showPage('wallet',this)"><span class="mbn-icon">💳</span><span class="mbn-label">Wallet</span></button>
+  <button class="mbn-item" onclick="showPage('budget',this)"><span class="mbn-icon">📊</span><span class="mbn-label">Budget</span></button>
+  <button class="mbn-item" onclick="showPage('planner',this)"><span class="mbn-icon">🧠</span><span class="mbn-label">Planner</span></button>
+  <button class="mbn-item" onclick="showPage('recommend',this)"><span class="mbn-icon">🏨</span><span class="mbn-label">Discover</span></button>
+  <button class="mbn-item" onclick="showPage('rewards',this)"><span class="mbn-icon">🎁</span><span class="mbn-label">Rewards</span></button>
+  <button class="mbn-item" onclick="showPage('translate',this)"><span class="mbn-icon">🌍</span><span class="mbn-label">Translate</span></button>
+</nav>
+
+<!-- APP SHELL -->
+<div class="app-shell" id="app-shell" style="display:none">
+  <div class="sidebar">
+    <div class="sb-logo">SOL<span>OME</span></div>
+    <div class="sb-nav">
+      <button class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">🏠</span><span>Dashboard</span></button>
+      <button class="nav-item" onclick="showPage('wallet',this)"><span class="nav-icon">💳</span><span>Wallet</span></button>
+      <button class="nav-item" onclick="showPage('budget',this)"><span class="nav-icon">📊</span><span>Budget</span></button>
+      <button class="nav-item" onclick="showPage('planner',this)"><span class="nav-icon">🧠</span><span>AI Planner</span></button>
+      <button class="nav-item" onclick="showPage('recommend',this)"><span class="nav-icon">🏨</span><span>Discover</span></button>
+      <button class="nav-item" onclick="showPage('rewards',this)"><span class="nav-icon">🎁</span><span>Rewards</span></button>
+      <button class="nav-item" onclick="showPage('translate',this)"><span class="nav-icon">🌍</span><span>Translate</span></button>
+    </div>
+    <div class="sb-bottom">
+      <button class="key-badge key-badge-miss" id="key-badge" onclick="openApiKeyModal()">
+        <div class="key-dot key-dot-miss" id="key-dot"></div><span id="key-badge-text">No API Key</span>
+      </button>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <div class="tt-track"><div class="tt-thumb"></div></div>
+        <span class="tt-label" id="theme-label">🌙 Dark Mode</span>
+      </button>
+      <div class="sb-user">
+        <div class="sb-avatar" id="sb-avatar">?</div>
+        <div><div class="sb-name" id="sb-name">Guest</div><div class="sb-role">Solo Traveller</div></div>
+      </div>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-title" id="dash-greeting">Good morning 👋</div>
+      <div class="page-sub">Your Tokyo trip is in 3 days. Here's your snapshot.</div>
+      <div class="grid3" style="margin-bottom:16px">
+        <div class="card-sm"><div class="stat-label">Wallet Balance</div><div class="stat-val" style="color:var(--blue)" id="dash-balance">₹82,400</div></div>
+        <div class="card-sm"><div class="stat-label">Budget Left</div><div class="stat-val" style="color:var(--teal)" id="dash-budget-left">₹47,200</div></div>
+        <div class="card-sm"><div class="stat-label">Reward Points</div><div class="stat-val" style="color:var(--amber)" id="dash-points">2,840 pts</div></div>
+      </div>
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="card">
+          <div class="section-head">📊 Budget Overview</div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span>Spent: <strong id="dash-spent">₹52,800</strong></span><span>Total: <strong>₹1,00,000</strong></span></div>
+          <div class="progress-wrap"><div class="progress-fill" id="dash-progress" style="width:52.8%;background:linear-gradient(90deg,var(--blue),var(--teal))"></div></div>
+          <div style="font-size:12px;color:var(--muted);margin:5px 0 12px">52.8% used · 8 days left</div>
+          <button class="btn btn-outline" style="width:100%" onclick="openPayModal()">+ Quick Pay</button>
+        </div>
+        <div class="card">
+          <div class="section-head">🔔 Notifications</div>
+          <div class="notif"><div class="notif-dot"></div><div><div style="font-size:13px;font-weight:600">Budget Alert</div><div style="font-size:12px;color:var(--muted)">Food spending 20% over plan today</div></div></div>
+          <div class="notif"><div class="notif-dot" style="background:var(--teal)"></div><div><div style="font-size:13px;font-weight:600">Cashback Earned!</div><div style="font-size:12px;color:var(--muted)">₹340 from ANA Airlines</div></div></div>
+          <div class="notif"><div class="notif-dot" style="background:var(--amber)"></div><div><div style="font-size:13px;font-weight:600">AI Recommendation</div><div style="font-size:12px;color:var(--muted)">3 hotels near Shinjuku ₹2,800/night</div></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-head">🔄 Smart Travel Loop</div>
+        <div class="travel-loop"><div class="travel-loop-inner" style="display:flex">
+          <div style="flex:1;min-width:110px;text-align:center;padding:12px 6px"><div style="font-size:26px;margin-bottom:5px">✅</div><div style="font-size:11px;font-weight:700;color:var(--blue)">Budget Set</div><div style="font-size:10px;color:var(--muted)">₹1,00,000</div></div>
+          <div style="display:flex;align-items:center;color:var(--border);font-size:18px">→</div>
+          <div style="flex:1;min-width:110px;text-align:center;padding:12px 6px"><div style="font-size:26px;margin-bottom:5px">✅</div><div style="font-size:11px;font-weight:700;color:var(--blue)">4 Payments</div><div style="font-size:10px;color:var(--muted)">via Solome</div></div>
+          <div style="display:flex;align-items:center;color:var(--border);font-size:18px">→</div>
+          <div style="flex:1;min-width:110px;text-align:center;padding:12px 6px"><div style="font-size:26px;margin-bottom:5px">✅</div><div style="font-size:11px;font-weight:700;color:var(--blue)">Auto-tracked</div><div style="font-size:10px;color:var(--muted)">Real-time</div></div>
+          <div style="display:flex;align-items:center;color:var(--border);font-size:18px">→</div>
+          <div style="flex:1;min-width:110px;text-align:center;padding:12px 6px"><div style="font-size:26px;margin-bottom:5px">🔵</div><div style="font-size:11px;font-weight:700;color:var(--blue)">AI Suggests</div><div style="font-size:10px;color:var(--muted)">3 options</div></div>
+          <div style="display:flex;align-items:center;color:var(--border);font-size:18px">→</div>
+          <div style="flex:1;min-width:110px;text-align:center;padding:12px 6px"><div style="font-size:26px;margin-bottom:5px">🏆</div><div style="font-size:11px;font-weight:700;color:var(--teal)">2,840 pts</div><div style="font-size:10px;color:var(--muted)">Rewards</div></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- WALLET -->
+    <div class="page" id="page-wallet">
+      <div class="page-title">Smart Travel Wallet</div>
+      <div class="page-sub">All payments, one place. Auto expense tracking.</div>
+      <div class="wallet-hero">
+        <div style="font-size:13px;opacity:.7;margin-bottom:6px">Total Balance</div>
+        <div class="wallet-balance" id="wallet-bal">₹82,400</div>
+        <div style="font-size:12px;opacity:.65">Solome Wallet · Auto-tracking ON ✓</div>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+          <button class="btn" style="background:rgba(255,255,255,.95);color:var(--blue);font-size:13px" onclick="openPayModal()">💳 Pay</button>
+          <button class="btn" style="background:rgba(255,255,255,.15);color:#fff;font-size:13px">+ Add Money</button>
+          <button class="btn" style="background:rgba(255,255,255,.15);color:#fff;font-size:13px">↑ Send</button>
+        </div>
+      </div>
+      <div class="card"><div class="section-head">Recent Transactions</div><div id="txn-list"></div></div>
+    </div>
+
+    <!-- BUDGET -->
+    <div class="page" id="page-budget">
+      <div class="page-title">Real-Time Budget Tracker</div>
+      <div class="page-sub">Every payment instantly updates your budget.</div>
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="card">
+          <div class="section-head">💼 Tokyo 2025 Budget</div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px"><span>Total</span><strong>₹1,00,000</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px"><span>Spent</span><strong style="color:var(--red)" id="bgt-spent">₹52,800</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:12px"><span>Remaining</span><strong style="color:var(--teal)" id="bgt-left">₹47,200</strong></div>
+          <div class="progress-wrap" style="height:13px"><div class="progress-fill" id="bgt-bar" style="width:52.8%;background:linear-gradient(90deg,var(--blue),var(--teal))"></div></div>
+          <button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="openPayModal()">+ Record Payment</button>
+        </div>
+        <div class="card">
+          <div class="section-head">📅 Daily Rate</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:10px">4 days elapsed of 12-day trip</div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:14px"><span>Avg/day</span><strong id="avg-day">₹13,200</strong></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:14px"><span>Safe limit</span><strong style="color:var(--teal)">₹5,900</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px"><span>Projected</span><strong style="color:var(--amber)">₹1,58,400</strong></div>
+          <div class="budget-alert">⚠️ At this rate, you'll exceed budget by ₹58,400.</div>
+        </div>
+      </div>
+      <div class="card"><div class="section-head">📂 Category Breakdown</div><div id="budget-cats"></div></div>
+    </div>
+
+    <!-- PLANNER -->
+    <div class="page" id="page-planner">
+      <div class="page-title">AI Trip Planner</div>
+      <div class="page-sub">Let AI create your perfect itinerary.</div>
+      <div class="grid2 planner-grid" style="align-items:start">
+        <div class="card">
+          <div class="section-head">✈️ Plan a New Trip</div>
+          <div class="form-group"><label>Destination</label><input id="plan-dest" type="text" value="Tokyo, Japan"></div>
+          <div class="form-group"><label>Duration (days, max 5)</label><input id="plan-days" type="number" value="3" min="1" max="5"></div>
+          <div class="form-group"><label>Budget (₹)</label><input id="plan-budget" type="number" value="100000"></div>
+          <div class="form-group"><label>Travel Style</label>
+            <select id="plan-style"><option value="budget">💰 Budget Backpacker</option><option value="midrange" selected>🏡 Mid-range</option><option value="luxury">✨ Luxury</option></select>
+          </div>
+          <div class="form-group"><label>Interests</label><input id="plan-interests" type="text" value="food, temples, anime"></div>
+          <button class="btn btn-primary" style="width:100%" onclick="generatePlan()">🧠 Generate AI Plan</button>
+        </div>
+        <div class="card">
+          <div class="section-head">📋 Your Itinerary</div>
+          <div id="plan-output"><div style="color:var(--muted);font-size:14px;text-align:center;padding:36px 16px"><div style="font-size:34px;margin-bottom:10px">🗺️</div>Fill in details and click Generate.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECOMMENDATIONS -->
+    <div class="page" id="page-recommend">
+      <div class="page-title">AI Discover</div>
+      <div class="page-sub">Budget-friendly options curated by AI.</div>
+      <div class="rec-filter-row" style="display:flex;gap:9px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="loadRecs('hotel',this)">🏨 Hotels</button>
+        <button class="btn btn-outline" onclick="loadRecs('restaurant',this)">🍜 Restaurants</button>
+        <button class="btn btn-outline" onclick="loadRecs('airline',this)">✈️ Flights</button>
+        <button class="btn btn-outline" onclick="loadRecs('activity',this)">🎭 Activities</button>
+        <input type="text" id="rec-dest" placeholder="Destination" style="width:160px" value="Tokyo">
+        <input type="number" id="rec-budget" placeholder="Max ₹" style="width:120px" value="5000">
+        <button class="btn btn-teal" onclick="fetchAIRecs()">🔍 Search</button>
+      </div>
+      <div id="rec-grid" class="grid3"></div>
+    </div>
+
+    <!-- REWARDS -->
+    <div class="page" id="page-rewards">
+      <div class="page-title">Rewards & Cashback</div>
+      <div class="page-sub">Earn points every time you pay through Solome.</div>
+      <div class="rewards-hero">
+        <div style="font-size:12px;opacity:.8;margin-bottom:5px">Your Points Balance</div>
+        <div class="points-big" id="points-display">2,840</div>
+        <div style="font-size:12px;opacity:.75;margin-top:3px">≈ ₹2,840 cashback · 🥈 Silver Explorer</div>
+        <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+          <button class="btn" style="background:rgba(255,255,255,.95);color:#00796b;font-size:13px">Redeem Points</button>
+          <button class="btn" style="background:rgba(255,255,255,.2);color:#fff;font-size:13px">View Partners</button>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card"><div class="section-head">🏆 Points History</div><div id="rewards-history"></div></div>
+        <div class="card">
+          <div class="section-head">🎯 Upcoming Benefits</div>
+          <div style="padding:12px;background:var(--blue-light);border-radius:var(--rs);margin-bottom:12px">
+            <div style="font-weight:700;font-size:13px;color:var(--blue)">160 pts until Gold!</div>
+            <div class="progress-wrap" style="margin:7px 0"><div class="progress-fill" style="width:95%;background:var(--blue)"></div></div>
+            <div style="font-size:12px;color:var(--muted)">Gold = 2x cashback + lounge access</div>
+          </div>
+          <div class="reward-item"><div class="reward-badge">🏨</div><div style="flex:1"><div style="font-weight:600;font-size:14px">Free hotel night</div><div style="font-size:12px;color:var(--muted)">5,000 pts · Partner hotels</div></div><div style="font-weight:700;color:var(--teal);font-size:13px">5,000 pts</div></div>
+          <div class="reward-item"><div class="reward-badge">✈️</div><div style="flex:1"><div style="font-weight:600;font-size:14px">Flight upgrade</div><div style="font-size:12px;color:var(--muted)">Economy → Business</div></div><div style="font-weight:700;color:var(--teal);font-size:13px">8,000 pts</div></div>
+          <div class="reward-item"><div class="reward-badge">💰</div><div style="flex:1"><div style="font-weight:600;font-size:14px">₹500 cashback</div><div style="font-size:12px;color:var(--muted)">Instant wallet credit</div></div><div style="font-weight:700;color:var(--teal);font-size:13px">500 pts</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSLATE -->
+    <div class="page" id="page-translate">
+      <div class="page-title">Smart Language Assistant</div>
+      <div class="page-sub">Break language barriers instantly.</div>
+      <div class="card translate-card" style="max-width:700px">
+        <div class="lang-row">
+          <select id="lang-from" style="flex:1;width:auto"><option value="English">🇬🇧 English</option><option value="Hindi">🇮🇳 Hindi</option><option value="Spanish">🇪🇸 Spanish</option><option value="French">🇫🇷 French</option><option value="German">🇩🇪 German</option></select>
+          <button class="swap-btn" onclick="swapLangs()">⇄</button>
+          <select id="lang-to" style="flex:1;width:auto"><option value="Japanese">🇯🇵 Japanese</option><option value="English">🇬🇧 English</option><option value="Hindi">🇮🇳 Hindi</option><option value="Korean">🇰🇷 Korean</option><option value="Thai">🇹🇭 Thai</option><option value="Chinese">🇨🇳 Chinese</option><option value="Spanish">🇪🇸 Spanish</option></select>
+        </div>
+        <div class="form-group"><label>Enter text</label><textarea id="translate-input" rows="3" placeholder="e.g. Where is the nearest train station?" style="resize:vertical"></textarea></div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <button class="btn btn-primary" style="flex:1;min-width:120px" onclick="doTranslate()">🌍 Translate</button>
+          <button class="btn btn-outline" style="font-size:12px;padding:8px 10px" onclick="quickPhrase('Where is the nearest train station?')">🚉 Station</button>
+          <button class="btn btn-outline" style="font-size:12px;padding:8px 10px" onclick="quickPhrase('How much does this cost?')">💰 Price</button>
+          <button class="btn btn-outline" style="font-size:12px;padding:8px 10px" onclick="quickPhrase('I need a doctor please')">🏥 Doctor</button>
+        </div>
+        <div><label>Translation</label><div class="translate-box" id="translate-output" style="color:var(--muted);font-style:italic">Translation will appear here...</div></div>
+        <div style="margin-top:14px">
+          <div class="section-head" style="font-size:13px">⚡ Quick Phrases</div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px">
+            <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="quickPhrase('Can I have the menu please?')">📋 Menu</button>
+            <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="quickPhrase('Please call a taxi for me')">🚕 Taxi</button>
+            <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="quickPhrase('Do you accept credit card?')">💳 Card</button>
+            <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="quickPhrase('I have a reservation under my name')">🏨 Hotel</button>
+            <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="quickPhrase('Where is the bathroom?')">🚻 WC</button>
+            <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="quickPhrase('Is there WiFi here?')">📶 WiFi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ===== THEME =====
+(function(){const s=localStorage.getItem('solome-theme')||'light';document.documentElement.setAttribute('data-theme',s);})();
+function toggleTheme(){
+  const h=document.documentElement,dark=h.getAttribute('data-theme')==='dark';
+  h.setAttribute('data-theme',dark?'light':'dark');
+  const lbl=document.getElementById('theme-label'); if(lbl) lbl.textContent=dark?'🌙 Dark Mode':'☀️ Light Mode';
+  const mb=document.getElementById('mob-theme-btn'); if(mb) mb.textContent=dark?'🌙':'☀️';
+  localStorage.setItem('solome-theme',dark?'light':'dark');
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  const dark=document.documentElement.getAttribute('data-theme')==='dark';
+  const lbl=document.getElementById('theme-label'); if(lbl) lbl.textContent=dark?'☀️ Light Mode':'🌙 Dark Mode';
+  const mb=document.getElementById('mob-theme-btn'); if(mb) mb.textContent=dark?'☀️':'🌙';
+});
+
+// ===== API KEY =====
+let API_KEY=localStorage.getItem('solome-api-key')||'';
+function getHeaders(){const h={'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};if(API_KEY)h['x-api-key']=API_KEY;return h;}
+function updateKeyBadge(){
+  const b=document.getElementById('key-badge'),d=document.getElementById('key-dot'),t=document.getElementById('key-badge-text');
+  if(!b)return;
+  if(API_KEY){b.className='key-badge key-badge-ok';d.className='key-dot key-dot-ok';t.textContent='API Key ✓';}
+  else{b.className='key-badge key-badge-miss';d.className='key-dot key-dot-miss';t.textContent='No API Key';}
+}
+function openApiKeyModal(){const m=document.getElementById('apikeyModal');m.style.display='flex';const i=document.getElementById('apikey-input');if(API_KEY)i.value=API_KEY;i.focus();}
+function saveApiKey(){const v=document.getElementById('apikey-input').value.trim();if(!v){alert('Please enter your API key.');return;}if(!v.startsWith('sk-ant-')&&!confirm('Doesn\'t look like Anthropic key. Save anyway?'))return;API_KEY=v;localStorage.setItem('solome-api-key',v);document.getElementById('apikeyModal').style.display='none';updateKeyBadge();}
+function skipApiKey(){document.getElementById('apikeyModal').style.display='none';updateKeyBadge();}
+function toggleKeyVis(){const i=document.getElementById('apikey-input'),b=document.getElementById('eye-btn');i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁':'🙈';}
+
+// ===== LOGIN =====
+function doLogin(){
+  const raw=document.getElementById('login-user').value.trim();
+  const pw=document.getElementById('login-pw').value;
+  const err=document.getElementById('login-err'),btn=document.getElementById('login-btn');
+  if(!raw||!pw){err.textContent='Please enter both username and password.';err.style.display='block';return;}
+  err.style.display='none';btn.textContent='Signing in...';btn.disabled=true;
+  const name=raw.charAt(0).toUpperCase()+raw.slice(1);
+  sessionStorage.setItem('solome-user',name);
+  applyUser(name);
+  const ls=document.getElementById('login-screen');ls.classList.add('hide');
+  const sp=document.getElementById('splash');sp.style.display='flex';
+  setTimeout(()=>{ls.style.display='none';sp.classList.add('fade');showApp();if(!API_KEY)setTimeout(()=>openApiKeyModal(),500);},1600);
+}
+function toggleLoginPw(){const i=document.getElementById('login-pw'),b=document.getElementById('login-eye');i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁':'🙈';}
+function applyUser(name){
+  const init=name.slice(0,2).toUpperCase();
+  const sa=document.getElementById('sb-avatar');if(sa)sa.textContent=init;
+  const sn=document.getElementById('sb-name');if(sn)sn.textContent=name;
+  const ma=document.getElementById('mob-avatar');if(ma)ma.textContent=init;
+  const gr=document.getElementById('dash-greeting');
+  if(gr){const h=new Date().getHours(),t=h<12?'Good morning':h<18?'Good afternoon':'Good evening';gr.textContent=`${t}, ${name} 👋`;}
+}
+function showApp(){document.getElementById('app-shell').style.display='flex';renderTxns();renderBudget();renderRewards();updateKeyBadge();}
+window.addEventListener('DOMContentLoaded',()=>{
+  ['login-user','login-pw'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});});
+  const u=sessionStorage.getItem('solome-user');
+  if(u){document.getElementById('login-screen').style.display='none';applyUser(u);showApp();}
+});
+
+// ===== STATE =====
+const S={
+  balance:82400,totalBudget:100000,spent:52800,points:2840,
+  txns:[
+    {m:'Grand Hyatt Tokyo',a:24000,c:'accommodation',i:'🏨',d:'Mar 18',t:'debit'},
+    {m:'Ichiran Ramen',a:1200,c:'food',i:'🍜',d:'Mar 18',t:'debit'},
+    {m:'ANA Airlines',a:18600,c:'transport',i:'✈️',d:'Mar 17',t:'debit'},
+    {m:'Cashback - ANA',a:340,c:'reward',i:'🎁',d:'Mar 17',t:'credit'},
+    {m:'TeamLab Planets',a:3800,c:'activities',i:'🎭',d:'Mar 17',t:'debit'},
+    {m:'Lawson Convenience',a:450,c:'food',i:'🛒',d:'Mar 16',t:'debit'},
+  ],
+  cats:{
+    accommodation:{spent:24000,budget:40000,icon:'🏨',label:'Accommodation',color:'#1a3fd4'},
+    food:{spent:8200,budget:20000,icon:'🍜',label:'Food & Dining',color:'#00c4a7'},
+    transport:{spent:18600,budget:25000,icon:'✈️',label:'Transport',color:'#f59e0b'},
+    activities:{spent:3800,budget:10000,icon:'🎭',label:'Activities',color:'#8b5cf6'},
+    shopping:{spent:0,budget:5000,icon:'🛍️',label:'Shopping',color:'#ef4444'},
+  },
+  rh:[
+    {desc:'Grand Hyatt payment',pts:240,d:'Mar 18',pos:true},
+    {desc:'ANA cashback bonus',pts:340,d:'Mar 17',pos:true},
+    {desc:'TeamLab Planets',pts:38,d:'Mar 17',pos:true},
+    {desc:'Redeemed ₹200 cashback',pts:-200,d:'Mar 16',pos:false},
+    {desc:'Lawson Convenience',pts:5,d:'Mar 16',pos:true},
+  ]
+};
+
+// ===== NAV =====
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item,.mbn-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  if(id==='wallet')renderTxns();
+  if(id==='budget')renderBudget();
+  if(id==='rewards')renderRewards();
+  if(id==='recommend')loadRecs('hotel',null);
+  window.scrollTo(0,0);
+}
+
+// ===== RENDER =====
+function renderTxns(){
+  document.getElementById('txn-list').innerHTML=S.txns.map(t=>`<div class="txn-item"><div class="txn-icon" style="background:${t.t==='credit'?'var(--teal-light)':'var(--blue-light)'}">${t.i}</div><div style="flex:1;min-width:0"><div class="txn-name">${t.m}</div><div class="txn-date">${t.d} · ${t.c}</div></div><div class="txn-amount ${t.t==='debit'?'txn-debit':'txn-credit'}">${t.t==='debit'?'-':'+'} ₹${t.a.toLocaleString()}</div></div>`).join('');
+}
+function renderBudget(){
+  const pct=(S.spent/S.totalBudget*100).toFixed(1);
+  document.getElementById('bgt-spent').textContent='₹'+S.spent.toLocaleString();
+  document.getElementById('bgt-left').textContent='₹'+(S.totalBudget-S.spent).toLocaleString();
+  document.getElementById('bgt-bar').style.width=pct+'%';
+  document.getElementById('avg-day').textContent='₹'+Math.round(S.spent/4).toLocaleString();
+  document.getElementById('budget-cats').innerHTML=Object.values(S.cats).map(c=>{
+    const p=Math.min(100,Math.round(c.spent/c.budget*100));
+    return `<div class="budget-cat"><div class="budget-cat-icon">${c.icon}</div><div class="budget-cat-info"><div class="budget-cat-row"><span>${c.label}</span><span>₹${c.spent.toLocaleString()} / ₹${c.budget.toLocaleString()}</span></div><div class="progress-wrap"><div class="progress-fill" style="width:${p}%;background:${c.color}"></div></div></div><span class="tag ${p>80?'tag-red':p>50?'tag-amber':'tag-teal'}">${p}%</span></div>`;
+  }).join('');
+}
+function renderRewards(){
+  document.getElementById('points-display').textContent=S.points.toLocaleString();
+  document.getElementById('dash-points').textContent=S.points.toLocaleString()+' pts';
+  document.getElementById('rewards-history').innerHTML=S.rh.map(r=>`<div class="reward-item"><div class="reward-badge">${r.pos?'⭐':'💸'}</div><div style="flex:1"><div style="font-weight:600;font-size:14px">${r.desc}</div><div style="font-size:12px;color:var(--muted)">${r.d}</div></div><div style="font-weight:700;font-size:14px;color:${r.pos?'var(--teal)':'var(--red)'}">${r.pos?'+':''}${r.pts} pts</div></div>`).join('');
+}
+
+// ===== PAYMENT =====
+let selPay='wallet';
+function openPayModal(){document.getElementById('payModal').classList.add('open');}
+function closePayModal(){document.getElementById('payModal').classList.remove('open');}
+function selMethod(el,m){document.querySelectorAll('.pay-method').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');selPay=m;}
+function processPayment(){
+  const merchant=document.getElementById('pay-merchant').value.trim();
+  const amount=parseFloat(document.getElementById('pay-amount').value);
+  const cat=document.getElementById('pay-cat').value;
+  if(!merchant||!amount||amount<=0){alert('Please enter merchant and amount.');return;}
+  const icons={accommodation:'🏨',food:'🍜',transport:'✈️',activities:'🎭',shopping:'🛍️'};
+  const btn=document.getElementById('pay-btn');
+  btn.innerHTML='<span class="spinner"></span> Processing...';btn.disabled=true;
+  setTimeout(()=>{
+    S.balance-=amount;S.spent+=amount;
+    if(S.cats[cat])S.cats[cat].spent+=amount;
+    const pts=Math.round(amount*.01);S.points+=pts;
+    S.txns.unshift({m:merchant,a:amount,c:cat,i:icons[cat]||'💳',d:'Now',t:'debit'});
+    S.rh.unshift({desc:'Payment at '+merchant,pts,d:'Now',pos:true});
+    document.getElementById('wallet-bal').textContent='₹'+S.balance.toLocaleString();
+    document.getElementById('dash-balance').textContent='₹'+S.balance.toLocaleString();
+    document.getElementById('dash-spent').textContent='₹'+S.spent.toLocaleString();
+    document.getElementById('dash-budget-left').textContent='₹'+(S.totalBudget-S.spent).toLocaleString();
+    document.getElementById('dash-progress').style.width=(S.spent/S.totalBudget*100)+'%';
+    renderTxns();renderBudget();renderRewards();
+    btn.innerHTML='Pay Now';btn.disabled=false;closePayModal();
+    document.getElementById('pay-merchant').value='';document.getElementById('pay-amount').value='';
+    alert(`✅ ₹${amount.toLocaleString()} paid!\n+${pts} reward points earned!`);
+  },1200);
+}
+
+// ===== AI PLANNER =====
+async function generatePlan(){
+  const dest=document.getElementById('plan-dest').value||'Tokyo';
+  const days=Math.min(parseInt(document.getElementById('plan-days').value)||3,5);
+  const budget=document.getElementById('plan-budget').value||'100000';
+  const style=document.getElementById('plan-style').value||'midrange';
+  const interests=document.getElementById('plan-interests').value||'sightseeing';
+  const out=document.getElementById('plan-output');
+  out.innerHTML='<div style="text-align:center;padding:36px;color:var(--muted)"><span class="spinner spinner-blue"></span><div style="margin-top:11px;font-size:14px">Crafting your itinerary...</div></div>';
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:getHeaders(),body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:[{role:'user',content:`Travel planner: create a ${days}-day ${style} itinerary for ${dest}. Budget: INR ${budget}. Interests: ${interests}.\nRespond ONLY with raw JSON array (no markdown):\n[{"day":1,"title":"Title","activities":[{"time":"9:00 AM","activity":"Name","description":"One sentence","cost":"INR XXX"}]}]\n3-4 activities per day.`}]})});
+    if(!resp.ok){const e=await resp.text();throw new Error(`HTTP ${resp.status}: ${e.slice(0,150)}`);}
+    const data=await resp.json();
+    if(data.error)throw new Error(`${data.error.type}: ${data.error.message}`);
+    if(!data.content?.[0]?.text)throw new Error('Empty API response');
+    let raw=data.content[0].text.trim().replace(/^```(?:json)?[\r\n]*/i,'').replace(/[\r\n]*```\s*$/i,'').trim();
+    const s=raw.indexOf('['),e=raw.lastIndexOf(']');
+    if(s===-1||e<=s)throw new Error('No JSON array in response');
+    const plan=JSON.parse(raw.slice(s,e+1));
+    out.innerHTML=plan.map(d=>`<div style="margin-bottom:18px"><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--blue);margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid var(--blue-light)">Day ${d.day||''}: ${d.title||''}</div>${(d.activities||[]).map(a=>`<div class="planner-step"><div class="step-day">${a.time||''}</div><div style="flex:1"><div class="step-activity">${a.activity||''}</div><div class="step-detail">${a.description||''}</div><div class="step-cost">${a.cost||''}</div></div></div>`).join('')}</div>`).join('<hr class="divider">');
+  }catch(e){
+    out.innerHTML=`<div style="padding:18px;line-height:1.7;font-size:14px"><div style="color:var(--red);margin-bottom:10px">⚠️ <strong>Could not generate plan</strong><br><code style="font-size:12px;word-break:break-all">${e.message}</code></div><div style="padding:10px;background:var(--blue-light);border-radius:var(--rs);color:var(--blue);font-size:13px">💡 Set a valid Anthropic API key (tap 🔑 button).</div></div>`;
+  }
+}
+
+// ===== AI RECOMMENDATIONS =====
+let recType='hotel';
+function loadRecs(type,el){
+  recType=type;
+  if(el&&el.closest('#page-recommend')){document.querySelectorAll('#page-recommend .btn:not(.btn-teal)').forEach(b=>b.className='btn btn-outline');el.className='btn btn-primary';}
+  fetchAIRecs();
+}
+async function fetchAIRecs(){
+  const dest=document.getElementById('rec-dest').value||'Tokyo';
+  const budget=document.getElementById('rec-budget').value||5000;
+  const grid=document.getElementById('rec-grid');
+  grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:36px;color:var(--muted)"><span class="spinner spinner-blue"></span><div style="margin-top:11px">Finding best options...</div></div>';
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:getHeaders(),body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1200,messages:[{role:'user',content:`List 6 real ${recType}s in ${dest} within INR ${budget}.\nRespond ONLY with raw JSON array (no markdown):\n[{"name":"Name","price":"INR XXX","rating":4.2,"description":"One sentence.","emoji":"emoji","tag":"Budget-friendly"}]`}]})});
+    if(!resp.ok){const e=await resp.text();throw new Error(`HTTP ${resp.status}: ${e.slice(0,150)}`);}
+    const data=await resp.json();
+    if(data.error)throw new Error(`${data.error.type}: ${data.error.message}`);
+    if(!data.content?.[0]?.text)throw new Error('Empty API response');
+    let raw=data.content[0].text.trim().replace(/^```(?:json)?[\r\n]*/i,'').replace(/[\r\n]*```\s*$/i,'').trim();
+    const s=raw.indexOf('['),e=raw.lastIndexOf(']');
+    if(s===-1||e<=s)throw new Error('No JSON array in response');
+    const recs=JSON.parse(raw.slice(s,e+1));
+    if(!recs.length)throw new Error('Empty list returned');
+    grid.innerHTML=recs.map(r=>`<div class="rec-card"><div class="rec-img">${r.emoji||'🏨'}</div><div class="rec-body"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:3px"><div class="rec-name">${r.name||''}</div><span class="tag tag-blue" style="font-size:10px;flex-shrink:0;margin-left:5px">${r.tag||'Pick'}</span></div><div class="stars">${'★'.repeat(Math.min(5,Math.round(r.rating||4)))}${'☆'.repeat(Math.max(0,5-Math.round(r.rating||4)))} <span style="color:var(--muted);font-size:11px">${r.rating||''}</span></div><div class="rec-meta">${r.description||''}</div><div style="display:flex;justify-content:space-between;align-items:center"><div class="rec-price">${r.price||''}</div><button class="btn btn-primary" style="font-size:12px;padding:6px 10px" onclick="bookThis('${(r.name||'').replace(/'/g,"\\'").replace(/"/g,'\\"')}')">Book</button></div></div></div>`).join('');
+  }catch(e){
+    grid.innerHTML=`<div style="grid-column:1/-1;padding:18px;font-size:14px;line-height:1.7"><div style="color:var(--red);margin-bottom:10px">⚠️ <strong>Could not load</strong><br><code style="font-size:12px;word-break:break-all">${e.message}</code></div><div style="padding:10px;background:var(--blue-light);border-radius:var(--rs);color:var(--blue);font-size:13px">💡 Set a valid Anthropic API key (tap 🔑 button).</div></div>`;
+  }
+}
+function bookThis(name){openPayModal();document.getElementById('pay-merchant').value=name;}
+
+// ===== TRANSLATE =====
+function quickPhrase(p){document.getElementById('translate-input').value=p;doTranslate();}
+function swapLangs(){const f=document.getElementById('lang-from'),t=document.getElementById('lang-to'),v=f.value;f.value=t.value;t.value=v;}
+async function doTranslate(){
+  const text=document.getElementById('translate-input').value.trim();
+  const from=document.getElementById('lang-from').value,to=document.getElementById('lang-to').value;
+  if(!text)return;
+  const out=document.getElementById('translate-output');
+  out.innerHTML='<span class="spinner spinner-blue"></span> Translating...';out.style.color='var(--muted)';out.style.fontStyle='italic';
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:getHeaders(),body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:400,messages:[{role:'user',content:`Translate from ${from} to ${to}: "${text}"\nReply ONLY with valid JSON: {"translation":"...","romanization":"...or empty","tip":"one travel tip"}`}]})});
+    const data=await resp.json();
+    if(data.error)throw new Error(data.error.message);
+    if(!data.content?.[0]?.text)throw new Error('Empty response');
+    let raw=data.content[0].text.trim().replace(/^```(?:json)?[\r\n]*/i,'').replace(/[\r\n]*```\s*$/i,'').trim();
+    const m=raw.match(/\{[\s\S]*\}/);if(!m)throw new Error('No JSON in response');
+    const p=JSON.parse(m[0]);
+    out.style.color='var(--text)';out.style.fontStyle='normal';
+    out.innerHTML=`<div style="font-size:22px;font-weight:600;margin-bottom:8px">${p.translation}</div>${p.romanization?`<div style="font-size:13px;color:var(--muted);margin-bottom:10px">${p.romanization}</div>`:''}<div style="padding:10px;background:var(--teal-light);border-radius:var(--rs);font-size:13px;color:var(--teal)">💡 ${p.tip}</div>`;
+  }catch(e){
+    out.style.color='var(--red)';out.style.fontStyle='normal';
+    out.innerHTML=`⚠️ ${e.message}`;
+  }
+}
+</script>
+</body>
+</html>
